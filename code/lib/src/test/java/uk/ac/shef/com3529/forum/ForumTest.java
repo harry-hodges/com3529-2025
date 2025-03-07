@@ -5,6 +5,8 @@ import org.junit.jupiter.api.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.*;
+import uk.ac.shef.com3529.forum.UnknownUserException;
 
 public class ForumTest {
 
@@ -137,6 +139,56 @@ public class ForumTest {
 
         // Then the username of the user with the most posts is returned
         assertThat(forum.getMostProlificUser(), equalTo("bash"));
+    }
+
+    @Test
+    public void shouldGetPostsMadeByUser() {
+
+        // Given a forum with a registered user
+        Forum forum = new Forum();
+        forum.registerUser("Chris Basham", "bash", "c.basham@sufc.co.uk");
+
+        // When user has made posts
+        forum.post("bash", "Billy Sharp scores goals", "We got Billy Sharp");
+        forum.post("bash", "Boxing Day", "Hark now hear");
+
+        // Then the list of posts by bash is returned
+        List<Post> postsByBash = forum.getPostsByUser("bash");
+
+        assertThat(postsByBash.size(), equalTo(2));
+
+        // Ensure the posts are correct
+        assertThat(postsByBash.get(0).getSubject(), equalTo("Billy Sharp scores goals"));
+        assertThat(postsByBash.get(1).getSubject(), equalTo("Boxing Day"));
+
+        // Optionally, you can also check the content of the posts
+        assertThat(postsByBash.get(0).getContent(), equalTo("We got Billy Sharp"));
+        assertThat(postsByBash.get(1).getContent(), equalTo("Hark now hear"));
+    }
+
+    @Test
+    public void shouldThrowErrorIfUserDoesntExistWhenChangingUsername() {
+        // Given a forum with a registered user
+        Forum forum = new Forum();
+        forum.registerUser("Chris Basham", "bash", "c.basham@sufc.co.uk");
+
+        // When user changes their username but misspells their current one, it throws an UnknownUserException
+        assertThrows(UnknownUserException.class, () -> forum.changeUsername("bass", "bashyboy"));
+
+    }
+
+    @Test
+    public void shouldCorrectlyChangeUsersUsername() {
+        // Given a forum with a registered user
+        Forum forum = new Forum();
+        forum.registerUser("Chris Basham", "bash", "c.basham@sufc.co.uk");
+
+        // When user changes their username
+        forum.changeUsername("bash", "bashyboy");
+
+        // Then that username should now exist for that user
+        assertThat(forum.getUser("bashyboy").getName(), equalTo("Chris Basham"));
+
     }
 
     Forum makeForum() {
